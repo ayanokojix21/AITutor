@@ -1,34 +1,197 @@
+import asyncio
+from typing import List, Optional
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+import backoff
+
+from app.core.exceptions import ClassroomAPIError, DriveAPIError
+
 
 class ClassroomService:
-    def __init__(self, token_info: dict):
-        self.creds = Credentials(
-            token=token_info["token"],
-            refresh_token=token_info.get("refresh_token"),
-            token_uri=token_info["token_uri"],
-            client_id=token_info["client_id"],
-            client_secret=token_info["client_secret"],
-            scopes=token_info["scopes"]
-        )
-        self.service = build('classroom', 'v1', credentials=self.creds)
-
-    def list_courses(self):
-        results = self.service.courses().list(pageSize=10).execute()
-        courses = results.get('courses', [])
-        return courses
-
-    def list_course_work(self, course_id: str):
-        results = self.service.courses().courseWork().list(courseId=course_id).execute()
-        course_work = results.get('courseWork', [])
-        return course_work
-
-    def get_course_work_materials(self, course_id: str, course_work_id: str):
-        # Note: courseWork.get returns the specific course work object which contains materials
-        # If looking for student submissions or attachments, logic might differ.
-        # This gets the assignment details including materials.
-        result = self.service.courses().courseWork().get(
-            courseId=course_id, 
-            id=course_work_id
-        ).execute()
-        return result.get('materials', [])
+    """Enhanced service for Google Classroom API with async support."""
+    
+    def __init__(self, credentials: Credentials):
+        """
+        Initialize service with Google credentials.
+        
+        Args:
+            credentials: Valid Google Credentials object
+        """
+        self.credentials = credentials
+        self.classroom_service = build('classroom', 'v1', credentials=credentials)
+        self.drive_service = build('drive', 'v3', credentials=credentials)
+    
+    @backoff.on_exception(
+        backoff.expo,
+        HttpError,
+        max_tries=3,
+        giveup=lambda e: e.resp.status in [400, 401, 403, 404]
+    )
+    async def list_courses(self, page_size: int = 50) -> List[dict]:
+        """
+        List all courses for the user with pagination.
+        
+        Returns:
+            List of course dictionaries
+        """
+        try:
+            courses = []
+            page_token = None
+            
+            while True:
+                result = await asyncio.to_thread(
+                    lambda: self.classroom_service.courses().list(
+                        pageSize=page_size,
+                        pageToken=page_token
+                    ).execute()
+                )
+                
+                courses.extend(result.get('courses', []))
+                page_token = result.get('nextPageToken')
+                
+                if not page_token:
+                    break
+            
+            return courses
+        
+        except HttpError as e:
+            raise ClassroomAPIError(f"Failed to list courses: {str(e)}")
+    
+    @backoff.on_exception(backoff.expo, HttpError, max_tries=3)
+    async def get_course(self, course_id: str) -> dict:
+        """Get detailed course information."""
+        try:
+            return await asyncio.to_thread(
+                lambda: self.classroom_service.courses().get(id=course_id).execute()
+            )
+        except HttpError as e:
+            raise ClassroomAPIError(f"Failed to get course {course_id}: {str(e)}")
+    
+    @backoff.on_exception(backoff.expo, HttpError, max_tries=3)
+    async def list_coursework(self, course_id: str, page_size: int = 50) -> List[dict]:
+        """List all coursework (assignments) for a course."""
+        try:
+            coursework = []
+            page_token = None
+            
+            while True:
+                result = await asyncio.to_thread(
+                    lambda: self.classroom_service.courses().courseWork().list(
+                        courseId=course_id,
+                        pageSize=page_size,
+                        pageToken=page_token
+                    ).execute()
+                )
+                
+                coursework.extend(result.get('courseWork', []))
+                page_token = result.get('nextPageToken')
+                
+                if not page_token:
+                    break
+            
+            return coursework
+        
+        except HttpError as e:
+            raise ClassroomAPIError(f"Failed to list coursework for {course_id}: {str(e)}")
+    
+    @backoff.on_exception(backoff.expo, HttpError, max_tries=3)
+    async def list_coursework_materials(self, course_id: str, page_size: int = 50) -> List[dict]:
+        """List all coursework materials for a course."""
+        try:
+            materials = []
+            page_token = None
+            
+            while True:
+                result = await asyncio.to_thread(
+                    lambda: self.classroom_service.courses().courseWorkMaterials().list(
+                        courseId=course_id,
+                        pageSize=page_size,
+                        pageToken=page_token
+                    ).execute()
+                )
+                
+                materials.extend(result.get('courseWorkMaterial', []))
+                page_token = result.get('nextPageToken')
+                
+                if not page_token:
+                    break
+            
+            return materials
+        
+        except HttpError as e:
+            raise ClassroomAPIError(f"Failed to list materials for {course_id}: {str(e)}")
+    
+    async def extract_drive_files(self, coursework_or_material: dict) -> List[dict]:
+        """
+        Extract Drive file IDs and metadata from coursework/material.
+        
+        Returns:
+            List of {
+                "drive_id": ...,
+                "drive_name": ...,
+                "mime_type": ...,
+                "web_view_link": ...
+            }
+        """
+        files = []
+        
+        materials = coursework_or_material.get('materials', [])
+        
+        for material in materials:
+            if 'driveFile' in material:
+                drive_file = material['driveFile']['driveFile']
+                files.append({
+                    "drive_id": drive_file['id'],
+                    "drive_name": drive_file.get('title', 'Untitled'),
+                    "mime_type": drive_file.get('mimeType'),
+                    "web_view_link": drive_file.get('alternateLink')
+                })
+            
+            elif 'youtubeVideo' in material:
+                yt = material['youtubeVideo']
+                files.append({
+                    "drive_id": f"youtube_{yt['id']}",
+                    "drive_name": yt.get('title', 'YouTube Video'),
+                    "mime_type": "video/youtube",
+                    "web_view_link": yt.get('alternateLink')
+                })
+            
+            elif 'link' in material:
+                link = material['link']
+                files.append({
+                    "drive_id": f"link_{hash(link['url'])}",
+                    "drive_name": link.get('title', 'Link'),
+                    "mime_type": "text/html",
+                    "web_view_link": link.get('url')
+                })
+        
+        return files
+    
+    async def get_all_course_files(self, course_id: str) -> List[dict]:
+        """
+        Get all files from both coursework and materials for a course.
+        
+        Returns:
+            List of unique Drive files
+        """
+        all_files = []
+        seen_ids = set()
+        
+        coursework = await self.list_coursework(course_id)
+        for work in coursework:
+            files = await self.extract_drive_files(work)
+            for file in files:
+                if file['drive_id'] not in seen_ids:
+                    all_files.append(file)
+                    seen_ids.add(file['drive_id'])
+        
+        materials = await self.list_coursework_materials(course_id)
+        for material in materials:
+            files = await self.extract_drive_files(material)
+            for file in files:
+                if file['drive_id'] not in seen_ids:
+                    all_files.append(file)
+                    seen_ids.add(file['drive_id'])
+        
+        return all_files
