@@ -1,55 +1,201 @@
 from fastapi import APIRouter, Request, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel
+
 from app.services.google_auth import GoogleAuthService
-from app.core.config import settings
+from app.core.database import get_db
+from app.core.security import create_token_pair, verify_token
+from app.core.exceptions import (
+    GoogleAuthError, 
+    InvalidTokenError,
+    to_http_exception
+)
+from app.models.database import User
+from sqlalchemy import select
 
 router = APIRouter()
 auth_service = GoogleAuthService()
 
+bearer_scheme = HTTPBearer(auto_error=False)
+
+class TokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    user: dict
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
 @router.get("/login")
-async def login(request: Request):
-    auth_url, state = auth_service.get_login_url()
+async def login(request: Request, redirect: bool = True):
+    """
+    Start Google OAuth login flow.
+    
+    - If redirect=true (default): Redirects browser to Google login page
+    - If redirect=false: Returns the OAuth URL as JSON (for Swagger/API testing)
+    """
+    auth_url, state = auth_service.get_authorization_url()
     request.session["oauth_state"] = state
-    return RedirectResponse(auth_url)
+    
+    if redirect:
+        return RedirectResponse(auth_url)
+    
+    # Return URL as JSON for API clients / Swagger UI
+    return {"authorization_url": auth_url, "state": state}
+
 
 @router.get("/callback")
-async def callback(request: Request, code: str, state: str):
-    if state != request.session.get("oauth_state"):
+async def callback(
+    request: Request,
+    code: str,
+    state: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Handle Google OAuth callback.
+    Exchange code for tokens, create/update user, issue JWT.
+    """
+    stored_state = request.session.get("oauth_state")
+    if not stored_state or state != stored_state:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid state parameter"
         )
     
     try:
-        token_info = auth_service.exchange_code(code)
-        # Store user info or token in session
-        # In a real app, you would create/get a user in DB and issue a JWT
-        # For now, we'll store the Google token info in session for simplicity in this phase
+        token_info = await auth_service.exchange_code_for_tokens(code)
         
-        # Verify user info
-        user_info = auth_service.get_user_info(token_info)
+        google_user_info = await auth_service.get_user_info(token_info)
         
-        request.session["user"] = user_info
-        request.session["token"] = token_info
+        user = await auth_service.create_or_update_user(db, google_user_info, token_info)
         
-        return JSONResponse(content={"message": "Login successful", "user": user_info})
+        tokens = create_token_pair(user.id)
+        
+        return JSONResponse(content={
+            **tokens,
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "picture": user.picture
+            }
+        })
+    
+    except GoogleAuthError as e:
+        raise to_http_exception(e)
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Authentication failed: {str(e)}"
         )
 
-@router.get("/logout")
-async def logout(request: Request):
-    request.session.clear()
-    return JSONResponse(content={"message": "Logged out"})
 
-@router.get("/me")
-async def get_current_user(request: Request):
-    user = request.session.get("user")
-    if not user:
+@router.post("/refresh", response_model=TokenResponse)
+async def refresh_token(
+    request: RefreshTokenRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Refresh access token using refresh token.
+    """
+    user_id = verify_token(request.refresh_token, token_type="refresh")
+    
+    if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated"
+            detail="Invalid refresh token"
         )
+    
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive"
+        )
+    
+    tokens = create_token_pair(user.id)
+    
+    return TokenResponse(
+        **tokens,
+        user={
+            "id": user.id,
+            "email": user.email,
+            "name": user.name,
+            "picture": user.picture
+        }
+    )
+
+
+@router.post("/logout")
+async def logout(request: Request):
+    """
+    Logout - clear session.
+    Note: JWTs can't be invalidated, so this just clears session.
+    For production, implement token blacklist with Redis.
+    """
+    request.session.clear()
+    return {"message": "Logged out successfully"}
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    db: AsyncSession = Depends(get_db)
+) -> User:
+    """
+    FastAPI dependency to get current authenticated user.
+    Uses HTTPBearer for Swagger UI compatibility.
+    
+    Usage:
+        @router.get("/profile")
+        async def get_profile(user: User = Depends(get_current_user)):
+            return user
+    """
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid authorization header",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    token = credentials.credentials
+    
+    user_id = verify_token(token, token_type="access")
+    
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found or inactive",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     return user
+
+
+@router.get("/me")
+async def get_me(user: User = Depends(get_current_user)):
+    """
+    Get current user profile.
+    """
+    return {
+        "id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "picture": user.picture,
+        "created_at": user.created_at.isoformat(),
+        "last_login": user.last_login.isoformat() if user.last_login else None
+    }

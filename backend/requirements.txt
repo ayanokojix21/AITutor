@@ -1,23 +1,56 @@
+# Core
 fastapi>=0.109.0
 uvicorn>=0.27.0
 pydantic>=2.5.0
 pydantic-settings>=2.0.0
-python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4
 python-multipart>=0.0.6
-sqlalchemy>=2.0.0
-aiosqlite>=0.19.0
-alembic>=1.13.0
-httpx>=0.26.0
+
+# Google APIs
 google-auth>=2.27.0
 google-auth-oauthlib>=1.2.0
 google-api-python-client>=2.116.0
+
+# LangChain ecosystem
 langchain>=0.1.0
-langchain-groq>=0.0.1
+langchain-groq>=0.1.0
 langchain-community>=0.0.20
-langchain-chroma>=0.1.0
+langchain-postgres>=0.0.9
+langchain-huggingface>=0.0.1
+
+# LangGraph (workflow orchestration)
+langgraph>=0.2.0
+langgraph-checkpoint>=2.0.0
+langgraph-checkpoint-postgres>=2.0.0
+
+# Local embeddings (FREE)
 sentence-transformers>=2.3.0
-pypdf>=3.17.0
+
+# Local reranking (FREE)
+flashrank>=0.2.0
+
+# Groq API (for Whisper — no LangChain loader)
+groq>=0.4.0
+
+# Document processing
+pymupdf>=1.23.0
+ffmpeg-python>=0.2.0
+Pillow>=10.0.0
+
+# Database (PostgreSQL via Supabase)
+sqlalchemy>=2.0.0
+alembic>=1.13.0
+asyncpg>=0.29.0
+psycopg[binary]>=3.1.0
+
+# Auth & Security
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+httpx>=0.26.0
+itsdangerous>=2.1.0
+cryptography>=42.0.0
+
+# Retry logic
+backoff>=2.2.0
+
+# Utils
 python-dotenv>=1.0.0
-openai-whisper>=20231117
-moviepy>=1.0.3
