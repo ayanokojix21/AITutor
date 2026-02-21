@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import tempfile
@@ -14,33 +15,38 @@ SUPPORTED_AUDIO_FORMATS = {'.mp3', '.wav', '.m4a', '.ogg', '.flac', '.webm', '.m
 MAX_FILE_SIZE = 25 * 1024 * 1024  
 SEGMENT_DURATION = 30  
 
+def _transcribe_sync(audio_path: str, groq_api_key: str) -> dict:
+    """Synchronous Whisper transcription — called via asyncio.to_thread()."""
+    client = Groq(api_key=groq_api_key)
+
+    with open(audio_path, 'rb') as f:
+        response = client.audio.transcriptions.create(
+            file=(os.path.basename(audio_path), f),
+            model="whisper-large-v3",
+            response_format="verbose_json",
+            timestamp_granularities=["segment"],
+        )
+
+    segments = []
+    if hasattr(response, 'segments') and response.segments:
+        for seg in response.segments:
+            segments.append({
+                "start": getattr(seg, 'start', 0),
+                "end": getattr(seg, 'end', 0),
+                "text": getattr(seg, 'text', '').strip(),
+            })
+
+    return {
+        "text": response.text or "",
+        "segments": segments,
+        "duration": getattr(response, 'duration', None),
+    }
+
+
 async def _transcribe(audio_path: str, groq_api_key: str) -> dict:
-    """Transcribe audio via Groq Whisper API with timestamps."""
+    """Transcribe audio via Groq Whisper API with timestamps (non-blocking)."""
     try:
-        client = Groq(api_key=groq_api_key)
-
-        with open(audio_path, 'rb') as f:
-            response = client.audio.transcriptions.create(
-                file=(os.path.basename(audio_path), f),
-                model="whisper-large-v3",
-                response_format="verbose_json",
-                timestamp_granularities=["segment"],
-            )
-
-        segments = []
-        if hasattr(response, 'segments') and response.segments:
-            for seg in response.segments:
-                segments.append({
-                    "start": getattr(seg, 'start', 0),
-                    "end": getattr(seg, 'end', 0),
-                    "text": getattr(seg, 'text', '').strip(),
-                })
-
-        return {
-            "text": response.text or "",
-            "segments": segments,
-            "duration": getattr(response, 'duration', None),
-        }
+        return await asyncio.to_thread(_transcribe_sync, audio_path, groq_api_key)
     except Exception as e:
         logger.error(f"Whisper transcription failed: {e}")
         return {"text": "", "segments": [], "duration": None}

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import Column, String, DateTime, Boolean, Integer, Text, ForeignKey, Index
+from sqlalchemy import Column, String, DateTime, Boolean, BigInteger, Integer, Text, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -91,7 +91,7 @@ class File(Base):
     web_view_link = Column(String(1024), nullable=True)
     
     local_path = Column(String(1024), nullable=True)
-    file_size = Column(Integer, nullable=True)  
+    file_size = Column(BigInteger, nullable=True)  # 64-bit: supports files > 2.1 GB
     file_hash = Column(String(64), nullable=True)  
     
     processing_status = Column(String(50), default="pending")  

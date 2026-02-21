@@ -15,7 +15,11 @@ from sqlalchemy.orm import declarative_base
 from app.core.config import settings
 
 # ── SSL context for Supabase ─────────────────────────────────────────
-# Supabase requires TLS for all external connections.
+# Supabase requires TLS but uses its own CA (not in Python's default trust
+# store). asyncpg raises SSLCertVerificationError without these two lines.
+# The connection is still fully encrypted — only CA verification is skipped.
+# To enable full verify-full mode: download prod-ca-2021.crt from the
+# Supabase dashboard and pass cafile= to ssl.create_default_context().
 _ssl_context = ssl.create_default_context()
 _ssl_context.check_hostname = False
 _ssl_context.verify_mode = ssl.CERT_NONE
@@ -24,14 +28,14 @@ engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DEBUG,
     pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10,
+    pool_size=8,
+    max_overflow=12,
     pool_recycle=300,
     connect_args={
         "ssl": _ssl_context,                       # Supabase: TLS required
-        "command_timeout": 60,                     # asyncpg client-side timeout
+        "command_timeout": 180,                    # asyncpg client-side timeout (3 min)
         "server_settings": {
-            "statement_timeout": "60000",           # 60s (Supabase default can be low)
+            "statement_timeout": "180000",          # 3 min server-side (Supabase default is low)
         },
     },
 )
@@ -56,8 +60,6 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         except Exception:
             await session.rollback()
             raise
-        finally:
-            await session.close()
 
 
 async def init_db():

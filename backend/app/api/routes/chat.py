@@ -7,6 +7,7 @@ Provides three endpoints:
   DELETE /chat/session/{session}  → Clear a session's memory
 """
 
+import asyncio
 import logging
 import uuid
 from datetime import datetime, timezone
@@ -139,7 +140,12 @@ async def chat_query(
             course_id=request.course_id,
         )
 
-        result = await chain.ainvoke(
+        # Run chain synchronously in a thread — required because
+        # RunnableWithMessageHistory calls get_session_history() sync,
+        # and PostgresChatMessageHistory uses a sync psycopg.Connection.
+        # asyncio.to_thread keeps the event loop free during execution.
+        result = await asyncio.to_thread(
+            chain.invoke,
             {"input": request.question},
             config={"configurable": {"session_id": session_id}},
         )

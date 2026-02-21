@@ -65,7 +65,7 @@ class Settings(BaseSettings):
         """
         url = self.DATABASE_URL.replace("+asyncpg", "")
         sep = "&" if "?" in url else "?"
-        return url + sep + "sslmode=require&options=-c%20statement_timeout%3D60000"
+        return url + sep + "sslmode=require&options=-c%20statement_timeout%3D180000"
 
     model_config = SettingsConfigDict(
         env_file=".env", case_sensitive=True, extra="ignore"

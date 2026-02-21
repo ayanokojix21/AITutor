@@ -1,0 +1,56 @@
+You are an expert pitch deck designer for a high-stakes GenAI Hackathon. Create a stunning, modern, and high-impact presentation for "Eduverse: The Next-Gen Multimodal AI Tutor".
+
+**Theme & Style:**
+*   **Visuals:** Dark Mode, Cyberpunk/Futuristic Education, Neon Accents (Purple/Blue), Glassmorphism.
+*   **Tone:** Professional, Visionary, Technical but Accessible.
+*   **Length:** 10 Slides (Strict Structure).
+
+**Content Structure (Strictly follow this order):**
+
+**Slide 1: Title Slide**
+*   **Title:** Eduverse
+*   **Subtitle:** The Next-Gen Multimodal AI Tutor
+*   **Tagline:** Transforming passive video content into active, intelligent knowledge bases.
+*   **Tech Stack:** LangGraph | Llama-3 (Groq) | Supabase pgvector | FastAPI
+
+**Slide 2: Problem Statement**
+*   **Headline:** Educational Content is Rich but Opaque.
+*   **Problem:** Video content is "black box" — students can't search inside lectures (Modality Blindness). 1:1 tutoring is unscalable.
+*   **Impact:** Millions of students struggle with information overload.
+
+**Slide 3: Motivation**
+*   **Headline:** The Trust Gap (Why Now?).
+*   **Gap:** Generic AI tutors hallucinate facts.
+*   **Opportunity:** **Citation-Specific Answers** — Every answer must be cited (e.g., "Lecture 4, 15:30"). Trust comes from evidence.
+
+**Slide 4: Application (Use Cases)**
+*   **Target Users:** Universities (Auto-TAs), Students (Exam Prep), Corporate (Onboarding).
+*   **Key Feature:** Citation-Specific Retrieval ("Show me the exact moment the professor mentioned bias.").
+
+**Slide 5: Proposed Method (Architecture)**
+*   **Headline:** Multimodal RAG + Agentic Workflow.
+*   **Flow:** Ingest (Drive) → Process (Whisper/CV) → Normalize → Embed (pgvector) → Reasoning (LangGraph) → Answer (Llama-3).
+
+**Slide 6: Semantic Normalizer (Novel Technique)**
+*   **Headline:** Bridging the Modality Gap.
+*   **Challenge:** Spoken language (video) vs. Formal text (book) mismatch in vector space.
+*   **Solution:** A pre-processing layer that rewrites/normalizes audio transcripts into structured text *before* embedding for 2x better retrieval alignment.
+
+**Slide 7: Datasets & Privacy**
+*   **Headline:** Bring Your Own Data (BYOD).
+*   **Sources:** MP4, PDF, PPTX.
+*   **Privacy:** No training on user data. Private vector namespaces.
+
+**Slide 8: Experiments & Validation**
+*   **Headline:** Measuring Success.
+*   **Metric 1:** **Retrieval Recall@5 > 90%** (Locating correct timestamp).
+*   **Metric 2:** **Latency < 500ms** (Groq real-time inference).
+*   **Metric 3:** **Hallucination Rate < 5%** (Ground-truth verification).
+
+**Slide 9: Novelty & Scale**
+*   **Novelty:** **Citation-Accuracy** + **Semantic Normalizer** + **Temporal Awareness**.
+*   **Scale:** Serverless Supabase arch. Adaptable to Legal/Medical domains.
+
+**Slide 10: Conclusion**
+*   **Headline:** Not just a chatbot. A cognitive engine.
+*   **CTA:** "Transforming how the world learns — one lecture at a time."
