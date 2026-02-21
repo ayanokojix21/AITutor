@@ -14,9 +14,7 @@ Pipeline:
 import logging
 from typing import Any, Dict, Optional
 
-from langchain_classic.chains.history_aware_retriever import (
-    create_history_aware_retriever,
-)
+from langchain_classic.chains.history_aware_retriever import create_history_aware_retriever
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnableLambda, RunnablePassthrough

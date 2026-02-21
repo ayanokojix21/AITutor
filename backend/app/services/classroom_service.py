@@ -41,9 +41,9 @@ class ClassroomService:
             
             while True:
                 result = await asyncio.to_thread(
-                    lambda: self.classroom_service.courses().list(
+                    lambda pt=page_token: self.classroom_service.courses().list(
                         pageSize=page_size,
-                        pageToken=page_token
+                        pageToken=pt
                     ).execute()
                 )
                 
@@ -77,10 +77,10 @@ class ClassroomService:
             
             while True:
                 result = await asyncio.to_thread(
-                    lambda: self.classroom_service.courses().courseWork().list(
+                    lambda pt=page_token: self.classroom_service.courses().courseWork().list(
                         courseId=course_id,
                         pageSize=page_size,
-                        pageToken=page_token
+                        pageToken=pt
                     ).execute()
                 )
                 
@@ -104,10 +104,10 @@ class ClassroomService:
             
             while True:
                 result = await asyncio.to_thread(
-                    lambda: self.classroom_service.courses().courseWorkMaterials().list(
+                    lambda pt=page_token: self.classroom_service.courses().courseWorkMaterials().list(
                         courseId=course_id,
                         pageSize=page_size,
-                        pageToken=page_token
+                        pageToken=pt
                     ).execute()
                 )
                 

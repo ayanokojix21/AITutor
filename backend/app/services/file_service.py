@@ -1,5 +1,7 @@
+import asyncio
 import os
 import hashlib
+import io
 import uuid
 from pathlib import Path
 from typing import Optional
@@ -7,7 +9,6 @@ from typing import Optional
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from google.oauth2.credentials import Credentials
-import io
 
 from app.core.config import settings
 from app.core.exceptions import DriveAPIError, ProcessingError
@@ -45,36 +46,45 @@ class FileService:
             (local_path, file_size_bytes, file_hash_sha256)
         """
         try:
-            user_dir = self.storage_dir / user_id
-            user_dir.mkdir(parents=True, exist_ok=True)
-            
-            unique_filename = f"{uuid.uuid4()}_{file_name}"
-            local_path = user_dir / unique_filename
-            
-            file_metadata = self.drive_service.files().get(
-                fileId=file_id,
-                fields="name,mimeType,size"
-            ).execute()
-            
-            request = self.drive_service.files().get_media(fileId=file_id)
-            fh = io.BytesIO()
-            downloader = MediaIoBaseDownload(fh, request)
-            
-            done = False
-            while not done:
-                status, done = downloader.next_chunk()
-            
-            with open(local_path, 'wb') as f:
-                f.write(fh.getvalue())
-            
-            file_hash = self._calculate_hash(local_path)
-            
-            file_size = local_path.stat().st_size
-            
-            return str(local_path), file_size, file_hash
-        
+            # All Google Drive API calls are synchronous — run in a thread
+            # to avoid blocking the asyncio event loop during downloads.
+            return await asyncio.to_thread(
+                self._download_file_sync, file_id, file_name, user_id
+            )
+        except DriveAPIError:
+            raise
         except Exception as e:
             raise DriveAPIError(f"Failed to download file {file_id}: {str(e)}")
+
+    def _download_file_sync(
+        self, file_id: str, file_name: str, user_id: str
+    ) -> tuple:
+        """Synchronous download — called via asyncio.to_thread()."""
+        user_dir = self.storage_dir / user_id
+        user_dir.mkdir(parents=True, exist_ok=True)
+
+        unique_filename = f"{uuid.uuid4()}_{file_name}"
+        local_path = user_dir / unique_filename
+
+        self.drive_service.files().get(
+            fileId=file_id, fields="name,mimeType,size"
+        ).execute()
+
+        request = self.drive_service.files().get_media(fileId=file_id)
+        fh = io.BytesIO()
+        downloader = MediaIoBaseDownload(fh, request)
+
+        done = False
+        while not done:
+            status, done = downloader.next_chunk()
+
+        with open(local_path, 'wb') as f:
+            f.write(fh.getvalue())
+
+        file_hash = self._calculate_hash(local_path)
+        file_size = local_path.stat().st_size
+
+        return str(local_path), file_size, file_hash
     
     async def get_file_metadata(self, file_id: str) -> dict:
         """

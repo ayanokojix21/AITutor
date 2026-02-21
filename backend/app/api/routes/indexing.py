@@ -147,13 +147,18 @@ async def start_course_indexing(
             detail="No pending files found for this course",
         )
 
-    # Queue each file
+    # Mark all files as processing FIRST, then commit, then schedule tasks
     file_ids = []
     for file_record in pending_files:
         file_record.processing_status = "processing"
         file_record.processing_error = None
         file_ids.append(file_record.id)
 
+    # Commit all status changes in one transaction BEFORE scheduling background tasks
+    await db.commit()
+
+    # Now schedule the background tasks (db is already committed)
+    for file_record in pending_files:
         background_tasks.add_task(
             run_indexing,
             file_id=file_record.id,
@@ -162,8 +167,6 @@ async def start_course_indexing(
             course_id=course_id,
             course_name=course.name,
         )
-
-    await db.flush()
 
     return BatchIndexingResponse(
         message=f"Queued {len(file_ids)} files for indexing",

@@ -221,7 +221,9 @@ class GoogleAuthService:
                 user.encrypted_access_token = encrypt_token(creds.token)
                 if creds.expiry:
                     user.token_expiry = creds.expiry
-                await db.commit()
+                # Flush the updated token to the current transaction.
+                # Do NOT commit here — the caller's get_db() dependency owns the transaction.
+                await db.flush()
             except Exception as e:
                 raise GoogleAuthError(f"Failed to refresh token: {str(e)}")
         

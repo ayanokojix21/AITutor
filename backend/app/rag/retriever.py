@@ -9,12 +9,11 @@ All components are LangChain built-ins except the lightweight deduplicator:
   - ContextualCompressionRetriever (wraps reranker around any retriever)
 """
 
+import hashlib
 import logging
 from typing import List, Optional
 
-from langchain_classic.retrievers.contextual_compression import (
-    ContextualCompressionRetriever,
-)
+from langchain_classic.retrievers.contextual_compression import ContextualCompressionRetriever
 from langchain_classic.retrievers.multi_query import MultiQueryRetriever
 from langchain_community.document_compressors.flashrank_rerank import FlashrankRerank
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
@@ -51,7 +50,7 @@ class _DeduplicatingRetriever(BaseRetriever):
         seen = set()
         unique = []
         for doc in docs:
-            content_hash = hash(doc.page_content)
+            content_hash = hashlib.md5(doc.page_content.encode()).hexdigest()
             if content_hash not in seen:
                 seen.add(content_hash)
                 unique.append(doc)

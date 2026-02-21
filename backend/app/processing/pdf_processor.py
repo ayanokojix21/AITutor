@@ -1,6 +1,7 @@
+import asyncio
 import logging
-import tempfile
 import os
+import tempfile
 from typing import List, Optional
 
 from langchain_community.document_loaders import PyMuPDFLoader
@@ -70,7 +71,8 @@ async def process_pdf(
 
     try:
         loader = _build_loader(tmp_path, groq_api_key)
-        docs = loader.load()
+        # loader.load() is synchronous (PyMuPDF + Groq Vision) — run in thread
+        docs = await asyncio.to_thread(loader.load)
 
         enriched = [
             _enrich_metadata(doc, file_name, course_id, source_id)
@@ -101,7 +103,7 @@ async def process_pdf_file(
 
     try:
         loader = _build_loader(file_path, groq_api_key)
-        docs = loader.load()
+        docs = await asyncio.to_thread(loader.load)
 
         enriched = [
             _enrich_metadata(doc, file_name, course_id, source_id)

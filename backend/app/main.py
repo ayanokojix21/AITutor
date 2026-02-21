@@ -37,7 +37,7 @@ def create_application() -> FastAPI:
     application.add_middleware(
         SessionMiddleware, 
         secret_key=settings.SECRET_KEY, 
-        https_only=False  
+        https_only=not settings.DEBUG  # True in production, False in local dev
     )
 
     application.include_router(auth.router, prefix="/auth", tags=["auth"])

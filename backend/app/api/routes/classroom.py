@@ -121,6 +121,11 @@ async def sync_courses_from_classroom(
     
     except ClassroomAPIError as e:
         raise to_http_exception(e)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Failed to sync courses: {str(e)}"
+        )
 
 
 @router.post("/courses/{course_id}/sync-files")

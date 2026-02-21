@@ -68,8 +68,10 @@ async def download_node(state: IndexingState) -> Dict[str, Any]:
             select(User).where(User.id == state["user_id"])
         )
         user = user_result.scalar_one_or_none()
-        encrypted_access = user.encrypted_access_token if user else None
-        encrypted_refresh = user.encrypted_refresh_token if user else None
+        if not user:
+            return {"status": "failed", "error": f"User {state['user_id']} not found in DB"}
+        encrypted_access = user.encrypted_access_token
+        encrypted_refresh = user.encrypted_refresh_token
     # ─── Transaction closed ─────────────────────────────────────
 
     # Check if already downloaded

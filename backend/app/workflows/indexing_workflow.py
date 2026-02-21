@@ -12,6 +12,7 @@ Usage:
 """
 
 import logging
+import traceback
 from datetime import datetime, timezone
 
 from langgraph.checkpoint.memory import MemorySaver
@@ -97,8 +98,8 @@ async def run_indexing(
     """
     Run the indexing workflow for a single file.
 
-    Opens a fresh PostgreSQL checkpointer per run via async context manager
-    (required by AsyncPostgresSaver.from_conn_string API).
+    Uses MemorySaver for LangGraph checkpointing (platform-independent,
+    avoids Windows psycopg3 async compatibility issues with ProactorEventLoop).
 
     Args:
         file_id: Database File.id
@@ -139,17 +140,26 @@ async def run_indexing(
         return result
 
     except Exception as e:
-        logger.error(f"Workflow execution failed for file_id={file_id}: {e}")
-        # Update DB with error
-        async with AsyncSessionLocal() as db:
-            await db.execute(
-                sql_update(File)
-                .where(File.id == file_id)
-                .values(
-                    processing_status="failed",
-                    processing_error=str(e),
-                    updated_at=datetime.now(timezone.utc),
+        logger.error(
+            f"Workflow execution failed for file_id={file_id}: {e}\n"
+            f"{traceback.format_exc()}"
+        )
+        # Update DB with error — wrapped in its own try/except to prevent
+        # cascading crashes if Supabase is also unreachable
+        try:
+            async with AsyncSessionLocal() as db:
+                await db.execute(
+                    sql_update(File)
+                    .where(File.id == file_id)
+                    .values(
+                        processing_status="failed",
+                        processing_error=str(e)[:500],  # Truncate to avoid column overflow
+                        updated_at=datetime.now(timezone.utc),
+                    )
                 )
+                await db.commit()
+        except Exception as db_err:
+            logger.error(
+                f"CRITICAL: Could not update file {file_id} status to 'failed' in DB: {db_err}"
             )
-            await db.commit()
         return {"status": "failed", "error": str(e)}
