@@ -84,6 +84,35 @@ def _get_checkpointer() -> PostgresSaver:
             else:
                 raise
 
+# ── History trimming ──────────────────────────────────────────────
+# Tool call messages contain large document content. Without trimming,
+# long conversations exceed the LLM's context window.
+MAX_HISTORY_MESSAGES = 10
+
+
+def _make_prompt(state: dict):
+    """
+    Callable prompt that trims history to prevent token overflow.
+
+    Keeps the system prompt + last MAX_HISTORY_MESSAGES messages.
+    Old tool call/result pairs (containing large document content)
+    are trimmed first, keeping recent conversation context.
+    """
+    from langchain_core.messages import SystemMessage, trim_messages
+
+    messages = state.get("messages", [])
+
+    trimmed = trim_messages(
+        messages,
+        max_tokens=MAX_HISTORY_MESSAGES,
+        token_counter=len,      # count by message count (simple + fast)
+        strategy="last",        # keep most recent
+        start_on="human",       # always start from a human message
+        include_system=True,    # preserve system prompt if present
+    )
+
+    return [SystemMessage(content=AGENT_SYSTEM_PROMPT)] + trimmed
+
 
 # ── Agent builder ─────────────────────────────────────────────────
 
@@ -95,8 +124,10 @@ def build_tutor_agent(
     """
     Build the LangGraph ReAct tutor agent.
 
-    Conversation history is persisted in PostgreSQL via PostgresSaver
-    with connection pooling, so sessions survive server restarts.
+    Features:
+      - History trimming: keeps last 10 messages to prevent token overflow
+      - PostgreSQL persistence: sessions survive server restarts
+      - Connection pooling: prevents connection exhaustion
     """
     llm = ChatGroq(
         model=settings.AGENT_MODEL,
@@ -109,7 +140,7 @@ def build_tutor_agent(
     agent = create_react_agent(
         model=llm,
         tools=tools,
-        prompt=AGENT_SYSTEM_PROMPT,
+        prompt=_make_prompt,      # callable: trims history before each LLM call
         checkpointer=_get_checkpointer(),
     )
 

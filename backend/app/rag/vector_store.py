@@ -127,3 +127,33 @@ class EduverseVectorStore:
             count = 0
 
         return {"name": self.collection_name, "count": count}
+
+    def get_all_documents(self, limit: int = 500) -> List[Document]:
+        """
+        Load all documents from this user's collection (for BM25 indexing).
+
+        Returns Document objects with page_content and metadata.
+        Limited to `limit` docs to prevent memory issues.
+        """
+        engine = get_sync_engine()
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(
+                    text(
+                        "SELECT e.document, e.cmetadata FROM langchain_pg_embedding e "
+                        "JOIN langchain_pg_collection c ON e.collection_id = c.uuid "
+                        "WHERE c.name = :name "
+                        "LIMIT :limit"
+                    ),
+                    {"name": self.collection_name, "limit": limit},
+                )
+                docs = []
+                for row in result:
+                    docs.append(Document(
+                        page_content=row[0] or "",
+                        metadata=row[1] or {},
+                    ))
+                return docs
+        except Exception as e:
+            logger.warning(f"Could not load documents for BM25: {e}")
+            return []

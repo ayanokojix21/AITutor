@@ -122,9 +122,36 @@ class ClassroomService:
         except HttpError as e:
             raise ClassroomAPIError(f"Failed to list materials for {course_id}: {str(e)}")
     
+    @backoff.on_exception(backoff.expo, HttpError, max_tries=3)
+    async def list_announcements(self, course_id: str, page_size: int = 50) -> List[dict]:
+        """List all announcements for a course (often contain lecture PDFs)."""
+        try:
+            announcements = []
+            page_token = None
+            
+            while True:
+                result = await asyncio.to_thread(
+                    lambda pt=page_token: self.classroom_service.courses().announcements().list(
+                        courseId=course_id,
+                        pageSize=page_size,
+                        pageToken=pt
+                    ).execute()
+                )
+                
+                announcements.extend(result.get('announcements', []))
+                page_token = result.get('nextPageToken')
+                
+                if not page_token:
+                    break
+            
+            return announcements
+        
+        except HttpError as e:
+            raise ClassroomAPIError(f"Failed to list announcements for {course_id}: {str(e)}")
+    
     async def extract_drive_files(self, coursework_or_material: dict) -> List[dict]:
         """
-        Extract Drive file IDs and metadata from coursework/material.
+        Extract Drive file IDs and metadata from coursework/material/announcement.
         
         Returns:
             List of {
@@ -170,14 +197,20 @@ class ClassroomService:
     
     async def get_all_course_files(self, course_id: str) -> List[dict]:
         """
-        Get all files from both coursework and materials for a course.
+        Get all files from coursework, materials, AND announcements.
+        
+        Google Classroom stores files in 3 places:
+          1. courseWork (assignments) — e.g., "Assignment 1", "LAB 1"
+          2. courseWorkMaterials — e.g., shared resources
+          3. announcements — e.g., "Lecture 1-5 Python.pdf" posted via class posts
         
         Returns:
-            List of unique Drive files
+            List of unique Drive files from all sources.
         """
         all_files = []
         seen_ids = set()
         
+        # Source 1: Assignments (courseWork)
         coursework = await self.list_coursework(course_id)
         for work in coursework:
             files = await self.extract_drive_files(work)
@@ -186,6 +219,7 @@ class ClassroomService:
                     all_files.append(file)
                     seen_ids.add(file['drive_id'])
         
+        # Source 2: Course materials
         materials = await self.list_coursework_materials(course_id)
         for material in materials:
             files = await self.extract_drive_files(material)
@@ -193,5 +227,22 @@ class ClassroomService:
                 if file['drive_id'] not in seen_ids:
                     all_files.append(file)
                     seen_ids.add(file['drive_id'])
+        
+        # Source 3: Announcements (often contain lecture PDFs!)
+        # Gracefully degrade if announcements scope not yet granted
+        try:
+            announcements = await self.list_announcements(course_id)
+            for announcement in announcements:
+                files = await self.extract_drive_files(announcement)
+                for file in files:
+                    if file['drive_id'] not in seen_ids:
+                        all_files.append(file)
+                        seen_ids.add(file['drive_id'])
+        except (ClassroomAPIError, HttpError) as e:
+            import logging
+            logging.getLogger(__name__).warning(
+                f"Could not fetch announcements for {course_id} "
+                f"(user may need to re-login to grant announcements scope): {e}"
+            )
         
         return all_files

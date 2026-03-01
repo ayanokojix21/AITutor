@@ -26,6 +26,7 @@ langgraph-checkpoint-postgres>=2.0.0
 
 # Local embeddings (FREE)
 sentence-transformers>=2.3.0
+rank_bm25
 
 # Local reranking (FREE)
 flashrank>=0.2.0

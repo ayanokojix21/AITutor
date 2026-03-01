@@ -66,11 +66,12 @@ class FileService:
         unique_filename = f"{uuid.uuid4()}_{file_name}"
         local_path = user_dir / unique_filename
 
-        self.drive_service.files().get(
-            fileId=file_id, fields="name,mimeType,size"
-        ).execute()
-
-        request = self.drive_service.files().get_media(fileId=file_id)
+        # Download file content directly — skip metadata pre-check
+        # (metadata is already known from Classroom API, and the
+        #  files().get() call fails for teacher-owned announcement files)
+        request = self.drive_service.files().get_media(
+            fileId=file_id, supportsAllDrives=True
+        )
         fh = io.BytesIO()
         downloader = MediaIoBaseDownload(fh, request)
 
