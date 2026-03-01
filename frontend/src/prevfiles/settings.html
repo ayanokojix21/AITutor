@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ClassMind AI - API &amp; RAG Configuration</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#3abff8",
+              "primary-focus": "#0ea5e9", 
+              "background-light": "#f5f7f8",
+              "background-dark": "#101d23",
+              "surface-dark": "#18282f",
+              "surface-light": "#ffffff",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {
+              "DEFAULT": "0.5rem",
+              "lg": "1rem",
+              "xl": "1.5rem",
+              "full": "9999px"
+            },
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #101d23; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27343a; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3abff8; 
+        }
+        
+        /* Slider thumb customization */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #3abff8;
+            cursor: pointer;
+            margin-top: -6px;
+        }
+        input[type=range]::-moz-range-thumb {
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #3abff8;
+            cursor: pointer;
+            border: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #27343a;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display antialiased overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar -->
+<div class="hidden lg:flex w-72 flex-col border-r border-slate-200 dark:border-slate-800 bg-surface-light dark:bg-surface-dark h-full">
+<div class="flex flex-col h-full justify-between p-4">
+<div class="flex flex-col gap-6">
+<!-- Brand -->
+<div class="flex items-center gap-3 px-2">
+<div class="bg-center bg-no-repeat bg-cover rounded-lg size-10 shadow-lg shadow-primary/20" data-alt="Abstract geometric blue pattern" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC8hXoCpV0oafAAdD4F93mwuYlYKnBzjDP2ByJVerQCD__TRZekfd_fD3w0u5TlAjc2wQorUQJ1QCdD4q4VtIpL5ZXyZt5_Kuj4pPdDRY-siHqvRrd4ASHqmdlYsiwHxQY1TlYAs6L51qRhvhXp3RcaMbMdZRFwxPdGkQbORuDxE1LqzZkXh6H-SiXhyiMMsM6XQUXAZqeheqIgxmYeJFLAvLsizdgjm4z78r0R4_wKH4eFJiAKvs8JVwUDRkXLUG4UUpvQKeJlLqQ");'></div>
+<div class="flex flex-col">
+<h1 class="text-slate-900 dark:text-white text-base font-bold leading-tight">ClassMind AI</h1>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">Teacher Edition</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:text-primary transition-colors">school</span>
+<span class="text-sm font-medium">Classrooms</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:text-primary transition-colors">chat</span>
+<span class="text-sm font-medium">Chat</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary dark:text-primary font-medium" href="#">
+<span class="material-symbols-outlined text-[24px] fill-current">settings</span>
+<span class="text-sm">Settings</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Actions -->
+<div class="flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:text-primary transition-colors">account_circle</span>
+<span class="text-sm font-medium">Profile</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group" href="#">
+<span class="material-symbols-outlined text-[24px] group-hover:text-red-400 transition-colors">logout</span>
+<span class="text-sm font-medium">Logout</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Mobile Header (Visible only on small screens) -->
+<div class="lg:hidden flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800 bg-surface-light dark:bg-surface-dark">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat bg-cover rounded-lg size-8" data-alt="Abstract geometric blue pattern" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBptNSAsQNXCrUVYlrzvGbT9drIzfcFjBuUv4KkEnwDRAo8zru3Q_eBdWVL50WClCvTLpn2ilQE_Ty30VSBhV50pmuQwzWC3ZjJnKXW_ZcTVLihCsSSOMb4LIJHprNlprvzsNTycVh6Gz_7ovw7hrymxF1eIVl0ygD6O-OGvGKRtIlIDSuUzJfVHWW3OvT4PQ7kcOr5iKT5-TqQfl426PrHsm89gg5d_VPuCMiPV6NEhkKFCVsWefRe44keCDmjtswzuQXehQNBL08");'></div>
+<span class="font-bold text-slate-900 dark:text-white">ClassMind AI</span>
+</div>
+<button class="text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<!-- Content Scroll Area -->
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-4 md:p-8 lg:px-12 lg:py-10">
+<div class="max-w-4xl mx-auto space-y-8">
+<!-- Header Section -->
+<div class="flex flex-col gap-2">
+<h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tracking-tight">API &amp; RAG Configuration</h1>
+<p class="text-slate-500 dark:text-slate-400 text-lg">Manage your Gemini API keys and fine-tune Retrieval-Augmented Generation parameters for optimal context awareness.</p>
+</div>
+<!-- Main Form Grid -->
+<div class="grid gap-6">
+<!-- Card 1: Gemini API Configuration -->
+<div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/50 rounded-xl p-6 md:p-8 shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<div class="p-2 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[24px]">key</span>
+</div>
+<h2 class="text-xl font-bold text-slate-900 dark:text-white">Gemini API Configuration</h2>
+</div>
+<div class="space-y-4">
+<label class="block">
+<span class="text-slate-700 dark:text-slate-300 font-medium text-sm mb-2 block">Gemini API Key</span>
+<div class="relative group">
+<input class="w-full bg-slate-50 dark:bg-[#111c21] text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-lg py-3 px-4 pr-12 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all font-mono text-sm" placeholder="Enter your API key" type="password" value="AIzaSyD-ExampleKeyForUI-Structure"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+<p class="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">info</span>
+                                        Your key is encrypted at rest and never shared with third parties.
+                                    </p>
+</label>
+</div>
+</div>
+<!-- Card 2: RAG Parameters -->
+<div class="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700/50 rounded-xl p-6 md:p-8 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[24px]">tune</span>
+</div>
+<div>
+<h2 class="text-xl font-bold text-slate-900 dark:text-white">RAG Parameters</h2>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Fine-tune how the AI retrieves and processes context.</p>
+</div>
+</div>
+<button class="text-primary hover:text-primary-focus text-sm font-medium transition-colors hidden sm:block">Reset Defaults</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Chunk Size -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<label class="text-slate-700 dark:text-slate-300 font-medium text-sm">Chunk Size (Tokens)</label>
+<span class="text-primary font-mono text-sm bg-primary/10 px-2 py-0.5 rounded">1024</span>
+</div>
+<input class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer" max="2048" min="128" step="128" type="range" value="1024"/>
+<div class="flex justify-between text-xs text-slate-400">
+<span>128</span>
+<span>2048</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-500">Determines the length of text segments retrieved from documents.</p>
+</div>
+<!-- Top K -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<label class="text-slate-700 dark:text-slate-300 font-medium text-sm">Top K Retrieval</label>
+<div class="flex items-center">
+<button class="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-l border-r border-slate-300 dark:border-slate-600 transition-colors text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-[16px]">remove</span>
+</button>
+<input class="w-12 h-8 text-center bg-slate-50 dark:bg-[#111c21] text-slate-900 dark:text-slate-100 text-sm border-y border-slate-300 dark:border-slate-600 focus:outline-none font-mono" type="number" value="5"/>
+<button class="w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-r border-l border-slate-300 dark:border-slate-600 transition-colors text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-500 mt-2">Number of relevant chunks to feed into the context window.</p>
+</div>
+<!-- Temperature -->
+<div class="space-y-3 md:col-span-2 border-t border-slate-100 dark:border-slate-800 pt-6">
+<div class="flex justify-between items-center mb-1">
+<label class="text-slate-700 dark:text-slate-300 font-medium text-sm">Temperature</label>
+<span class="text-primary font-mono text-sm bg-primary/10 px-2 py-0.5 rounded">0.7</span>
+</div>
+<input class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer" max="1" min="0" step="0.1" type="range" value="0.7"/>
+<div class="flex justify-between text-xs text-slate-400">
+<span>0.0 (Precise)</span>
+<span>1.0 (Creative)</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-500">Controls randomness. Lower values are more deterministic for factual queries.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Bar -->
+<div class="flex items-center justify-end gap-4 pt-4 pb-20">
+<button class="px-6 py-3 rounded-lg text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                            Cancel
+                        </button>
+<button class="px-8 py-3 rounded-lg bg-primary hover:bg-primary-focus text-slate-900 font-bold shadow-lg shadow-primary/25 transition-all transform active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined">save</span>
+                            Save Changes
+                        </button>
+</div>
+</div>
+</div>
+<!-- Toast Notification -->
+<div class="absolute bottom-6 right-6 md:right-10 flex items-center gap-3 bg-surface-dark dark:bg-surface-light text-white dark:text-slate-900 px-4 py-3 rounded-lg shadow-2xl border border-slate-700 dark:border-slate-200 animate-bounce" style="animation: slideUp 0.5s ease-out forwards, fadeOut 0.5s ease-in 4s forwards;">
+<div class="bg-green-500 rounded-full p-1 text-white">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-sm">Settings Saved</span>
+<span class="text-xs opacity-90">Your RAG configuration has been updated.</span>
+</div>
+<button class="ml-2 text-white/50 dark:text-slate-900/50 hover:text-white dark:hover:text-slate-900">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<style>
+                @keyframes slideUp {
+                    from { transform: translateY(100%); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                @keyframes fadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; pointer-events: none; }
+                }
+            </style>
+</div>
+</div>
+</body></html>

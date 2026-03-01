@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClassMind AI - Learn Smarter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Sora:wght@100..800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#6366F1", // Indigo-500
+                        "primary-dark": "#4F46E5", // Indigo-600
+                        "secondary": "#8B5CF6", // Violet-500
+                        "background-light": "#f8fafc",
+                        "background-dark": "#05070F", // Deep navy as requested
+                        "surface-dark": "#0f172a", // Slightly lighter navy for cards
+                        "surface-glass": "rgba(15, 23, 42, 0.6)",
+                        "auth-primary": "#3abff8",
+                        "auth-bg-light": "#f5f7f8",
+                        "auth-bg-dark": "#101d23",
+                        "chat-primary-content": "#002b3d",
+                        "chat-surface-light": "#ffffff",
+                        "chat-glass-dark": "rgba(27, 36, 39, 0.7)",
+                        "chat-glass-border": "rgba(255, 255, 255, 0.08)",
+                        "dash-primary-content": "#002b3d",
+                        "dash-surface-light": "#ffffff",
+                        "settings-primary-focus": "#0ea5e9",
+                        "settings-surface-light": "#ffffff",
+                        "sub-primary-content": "#002b3d",
+                        "sub-surface-light": "#ffffff",
+                        "sub-border-light": "#e5e7eb",
+                        "sub-border-dark": "#3a4d55"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Manrope", "sans-serif"],
+                        "sora": ["Sora", "sans-serif"],
+                    },
+                    backgroundImage: {
+                        'hero-gradient': 'linear-gradient(to right, #6366F1, #8B5CF6, #EC4899)',
+                        'glow-gradient': 'radial-gradient(circle at center, rgba(99, 102, 241, 0.15) 0%, rgba(5, 7, 15, 0) 70%)',
+                    }
+                },
+            },
+        }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

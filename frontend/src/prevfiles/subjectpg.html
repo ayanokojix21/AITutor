@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ClassMind AI - Subject Detail</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3abff8",
+                        "primary-content": "#002b3d",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#111618",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1b2427",
+                        "border-light": "#e5e7eb",
+                        "border-dark": "#3a4d55",
+                    },
+                    fontFamily: {
+                        display: ["Manrope", "sans-serif"],
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col overflow-hidden">
+<div class="flex h-screen w-full overflow-hidden">
+<!-- Sidebar -->
+<aside class="hidden md:flex flex-col w-72 bg-surface-dark dark:bg-background-dark border-r border-border-dark flex-shrink-0 h-full">
+<div class="flex flex-col h-full p-4">
+<!-- User Profile / Brand -->
+<div class="flex items-center gap-3 mb-8 px-2">
+<div class="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-primary-content font-bold shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-white">school</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-slate-100 text-base font-bold leading-tight">ClassMind AI</h1>
+<p class="text-slate-400 text-xs font-medium">Teacher Pro Plan</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex flex-col gap-2 flex-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-all" href="#">
+<span class="material-symbols-outlined fill-1">book_2</span>
+<span class="text-sm font-bold">Subjects</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">assignment</span>
+<span class="text-sm font-medium">Assignments</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">groups</span>
+<span class="text-sm font-medium">Students</span>
+</a>
+</nav>
+<!-- Bottom Actions -->
+<div class="mt-auto pt-4 border-t border-border-dark flex flex-col gap-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary transition-colors">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-background-light dark:bg-background-dark relative">
+<!-- Breadcrumbs & Header -->
+<div class="flex-shrink-0 px-6 py-6 md:px-10 md:py-8">
+<div class="flex flex-wrap gap-2 items-center mb-4 text-sm font-medium">
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#">Subjects</a>
+<span class="text-slate-300 dark:text-slate-600">/</span>
+<span class="text-slate-900 dark:text-slate-100">AP Physics 1</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="flex gap-5 items-center">
+<div class="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white flex-shrink-0">
+<span class="material-symbols-outlined text-4xl">functions</span>
+</div>
+<div class="flex flex-col gap-1">
+<h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">AP Physics 1</h2>
+<p class="text-slate-500 dark:text-slate-400 font-medium">Mechanics and Kinematics • Period 3</p>
+</div>
+</div>
+<button class="flex items-center justify-center gap-2 h-10 px-5 bg-surface-dark dark:bg-surface-dark border border-border-dark hover:border-primary/50 text-slate-200 text-sm font-bold rounded-lg transition-all shadow-sm hover:shadow-md active:scale-95 group">
+<span class="material-symbols-outlined text-[20px] group-hover:animate-spin">sync</span>
+<span>Reindex All</span>
+</button>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex-shrink-0 px-6 md:px-10 border-b border-slate-200 dark:border-border-dark">
+<div class="flex gap-8">
+<a class="relative pb-4 px-1 text-sm font-bold text-primary border-b-2 border-primary transition-colors" href="#">
+                        Materials
+                        <span class="absolute -top-2 -right-3 bg-primary/20 text-primary text-[10px] px-1.5 py-0.5 rounded-full">12</span>
+</a>
+<a class="pb-4 px-1 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border-b-2 border-transparent hover:border-slate-300 dark:hover:border-slate-600 transition-all" href="#">
+                        Chat Context
+                    </a>
+<a class="pb-4 px-1 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border-b-2 border-transparent hover:border-slate-300 dark:hover:border-slate-600 transition-all" href="#">
+                        Quizzes
+                    </a>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 md:p-10">
+<!-- Filter Bar -->
+<div class="flex justify-between items-center mb-6">
+<div class="relative w-full max-w-sm group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2.5 border-none rounded-xl leading-5 bg-white dark:bg-surface-dark text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary sm:text-sm shadow-sm" placeholder="Search files..." type="text"/>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors">
+<span class="material-symbols-outlined">view_module</span>
+</button>
+</div>
+</div>
+<!-- Files Table -->
+<div class="bg-white dark:bg-surface-dark rounded-2xl shadow-sm border border-slate-200 dark:border-border-dark overflow-hidden">
+<div class="overflow-x-auto">
+<table class="min-w-full text-left">
+<thead>
+<tr class="border-b border-slate-200 dark:border-border-dark bg-slate-50 dark:bg-black/20">
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-1/3">File Name</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Type</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Size</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Last Updated</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Index Status</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-border-dark">
+<!-- Row 1 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-red-500/10 text-red-500">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-slate-900 dark:text-slate-200">Kinematics_Lecture_Notes.pdf</span>
+<span class="text-xs text-slate-500 dark:text-slate-500">Google Drive</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-300">
+                                            PDF
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        2.4 MB
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        2 hours ago
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-emerald-500">
+<span class="material-symbols-outlined text-[18px] fill-1">check_circle</span>
+<span class="text-xs font-bold">Indexed</span>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-1 rounded-full hover:bg-primary/10">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-blue-500/10 text-blue-500">
+<span class="material-symbols-outlined text-[20px]">description</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-slate-900 dark:text-slate-200">Newton_Laws_Worksheet.docx</span>
+<span class="text-xs text-slate-500 dark:text-slate-500">Uploaded</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-300">
+                                            DOCX
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        1.1 MB
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        Yesterday
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-emerald-500">
+<span class="material-symbols-outlined text-[18px] fill-1">check_circle</span>
+<span class="text-xs font-bold">Indexed</span>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-1 rounded-full hover:bg-primary/10">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-red-500/10 text-red-500">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-slate-900 dark:text-slate-200">Lab_Report_Template.pdf</span>
+<span class="text-xs text-slate-500 dark:text-slate-500">Google Drive</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-300">
+                                            PDF
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        0.5 MB
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        Oct 24, 2023
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-emerald-500">
+<span class="material-symbols-outlined text-[18px] fill-1">check_circle</span>
+<span class="text-xs font-bold">Indexed</span>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-1 rounded-full hover:bg-primary/10">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-red-500/10 text-red-500">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-slate-900 dark:text-slate-200">Chapter_3_Summary.pdf</span>
+<span class="text-xs text-slate-500 dark:text-slate-500">Google Drive</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-300">
+                                            PDF
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        3.2 MB
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        Oct 20, 2023
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-yellow-500">
+<span class="material-symbols-outlined text-[18px] animate-pulse">sync</span>
+<span class="text-xs font-bold">Processing</span>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-1 rounded-full hover:bg-primary/10">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-red-500/10 text-red-500">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-slate-900 dark:text-slate-200">Midterm_Review_Packet.pdf</span>
+<span class="text-xs text-slate-500 dark:text-slate-500">Uploaded</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-slate-300">
+                                            PDF
+                                        </span>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        5.8 MB
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                        Oct 15, 2023
+                                    </td>
+<td class="px-6 py-4 whitespace-nowrap">
+<div class="flex items-center gap-1.5 text-emerald-500">
+<span class="material-symbols-outlined text-[18px] fill-1">check_circle</span>
+<span class="text-xs font-bold">Indexed</span>
+</div>
+</td>
+<td class="px-6 py-4 whitespace-nowrap text-right">
+<button class="text-slate-400 hover:text-primary transition-colors p-1 rounded-full hover:bg-primary/10">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination (Simplified) -->
+<div class="px-6 py-4 border-t border-slate-200 dark:border-border-dark flex items-center justify-between">
+<span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Showing 1-5 of 12 files</span>
+<div class="flex gap-2">
+<button class="px-3 py-1 text-xs font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-border-dark rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 disabled:opacity-50" disabled="">Previous</button>
+<button class="px-3 py-1 text-xs font-bold text-slate-900 dark:text-slate-200 border border-slate-200 dark:border-border-dark rounded-lg hover:bg-slate-100 dark:hover:bg-white/5">Next</button>
+</div>
+</div>
+</div>
+<!-- Empty State Example (Hidden, but good for completeness in designs) -->
+<!-- 
+                <div class="flex flex-col items-center justify-center py-20 text-center hidden">
+                    <div class="bg-slate-100 dark:bg-surface-dark p-6 rounded-full mb-4">
+                        <span class="material-symbols-outlined text-4xl text-slate-400">upload_file</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2">No materials found</h3>
+                    <p class="text-slate-500 max-w-sm mb-6">Upload files or sync with Google Classroom to start generating AI insights.</p>
+                    <button class="bg-primary text-primary-content font-bold py-2.5 px-5 rounded-xl hover:opacity-90 transition-opacity">
+                        Upload Material
+                    </button>
+                </div>
+                -->
+</div>
+</main>
+</div>
+</body></html>

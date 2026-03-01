@@ -1,0 +1,20 @@
+/* Custom Scrollbar for dark theme */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #111618; 
+}
+::-webkit-scrollbar-thumb {
+    background: #27343a; 
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #3a4d55; 
+}
+.glass-panel {
+    background: rgba(27, 36, 39, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
