@@ -192,6 +192,8 @@ async def _sync_course_files_background(user_id: str, course_id: str, classroom_
     """
     Background task to sync course files.
     """
+    import logging
+    logger = logging.getLogger(__name__)
     from app.core.database import AsyncSessionLocal
     
     async with AsyncSessionLocal() as db:
@@ -202,11 +204,15 @@ async def _sync_course_files_background(user_id: str, course_id: str, classroom_
             file_service = FileService(creds)
             
             classroom_files = await classroom_service.get_all_course_files(classroom_id)
+            logger.info(f"[sync] Found {len(classroom_files)} total files for classroom {classroom_id}")
             
             downloaded_count = 0
+            skipped_count = 0
             
             for cf in classroom_files:
                 if cf['drive_id'].startswith(('youtube_', 'link_')):
+                    logger.debug(f"[sync] Skipping non-Drive file: {cf['drive_name']}")
+                    skipped_count += 1
                     continue
                 
                 result = await db.execute(
@@ -218,9 +224,12 @@ async def _sync_course_files_background(user_id: str, course_id: str, classroom_
                 existing_file = result.scalar_one_or_none()
                 
                 if existing_file:
+                    logger.debug(f"[sync] Already exists: {cf['drive_name']}")
+                    skipped_count += 1
                     continue  
                 
                 try:
+                    logger.info(f"[sync] Downloading: {cf['drive_name']} (mime={cf.get('mime_type')})")
                     local_path, file_size, file_hash = await file_service.download_file(
                         cf['drive_id'],
                         cf['drive_name'],
@@ -245,8 +254,13 @@ async def _sync_course_files_background(user_id: str, course_id: str, classroom_
                     )
                     db.add(new_file)
                     downloaded_count += 1
+                    logger.info(f"[sync] Downloaded: {cf['drive_name']} ({file_size} bytes)")
                 
-                except DriveAPIError:
+                except DriveAPIError as e:
+                    logger.warning(f"[sync] Download FAILED for {cf['drive_name']}: {e}")
+                    continue
+                except Exception as e:
+                    logger.error(f"[sync] Unexpected error for {cf['drive_name']}: {e}")
                     continue
             
             await db.execute(
@@ -254,6 +268,7 @@ async def _sync_course_files_background(user_id: str, course_id: str, classroom_
                 .where(Course.id == course_id)
                 .values(
                     sync_status="completed",
+                    sync_error=None,
                     last_synced=datetime.now(timezone.utc),
                     total_files=len(classroom_files),
                     updated_at=datetime.now(timezone.utc)
@@ -261,8 +276,13 @@ async def _sync_course_files_background(user_id: str, course_id: str, classroom_
             )
             
             await db.commit()
+            logger.info(
+                f"[sync] Complete: {downloaded_count} downloaded, "
+                f"{skipped_count} skipped, {len(classroom_files)} total"
+            )
         
         except Exception as e:
+            logger.error(f"[sync] Background sync FAILED: {e}", exc_info=True)
             await db.execute(
                 update(Course)
                 .where(Course.id == course_id)

@@ -49,6 +49,7 @@ def _make_search_course_materials(user_id: str, groq_api_key: str, course_id: Op
                 return "No relevant information found in course materials."
 
             # Build formatted text for the LLM
+            # Use parent_content (richer context) if available, else chunk content
             blocks = []
             for i, doc in enumerate(docs, 1):
                 meta = doc.metadata
@@ -58,7 +59,9 @@ def _make_search_course_materials(user_id: str, groq_api_key: str, course_id: Op
                 if page is not None:
                     header += f", page {page}"
                 header += ")"
-                blocks.append(f"{header}\n{doc.page_content}")
+                # Parent content gives 800-char context vs 300-char child chunk
+                content = meta.get("parent_content", doc.page_content)
+                blocks.append(f"{header}\n{content}")
 
             # Store structured citations in cache (read by chat.py)
             _citation_cache[user_id] = [
